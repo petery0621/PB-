@@ -3,6 +3,12 @@ using System;
 using System.Collections;
 using System.Text;
 
+[System.Serializable]		
+public class DiaryDevOptions		
+{		
+    public bool allowUnlimitedDiaries;		
+}
+
 public class QuestionEntry {
 	public string questionText;
 	public string[] answerText;
@@ -31,16 +37,15 @@ public class DiaryScript2: MonoBehaviour {
 	public GUISkin mySkin; //for diary window style 
     public bool surveyWindow ;
 	public QuestionEntry[] questionArr;
-
+	public GameObject ApplicationController; //This is for Tyler to use this script outside it
 
 	//Private Objects and Variables
-	public GameObject ApplicationController; //This is for Tyler to use this script outside it
     //Diary process
 	Rect surveyGUI ;
 	QuestionEntry[] msas1018sec1, msas1018sec2, followUp;
 	int[] answerArr;
 	string answers;
-	string symptoms;
+	string symptoms = "";
 	int count = 0;
 	string questionBegin = "Since the last entry, have you had any ";
 	string[] answerYN = new string[] {"Yes", "No"};
@@ -73,8 +78,8 @@ public class DiaryScript2: MonoBehaviour {
         diaryWinLeft = 30; 
 		diaryWinTop = 60; 
         messageTrigger = false; 
-		today = System.DateTime. Now.ToShortDateString();
-
+//		today = System.DateTime. Now.ToShortDateString();//This time is initialization time not diary starting or finishing time
+        
         //Audio and Animation
 		audioNum = questionArr.Length-1;
 		audioSwitch = false; 
@@ -385,7 +390,7 @@ public class DiaryScript2: MonoBehaviour {
 
 		Debug.Log("Have done " +times2day+" time(s) today");
 //		Debug.Log("Last time response: " + PlayerPrefs.GetString("responses")); 
-		if(times2day>=maxPerDay){
+		if(times2day>=maxPerDay&&!devOptions.allowUnlimitedDiaries){
 //			toast("You've taken diary"+ times2day+ " times today");
 			Debug.Log("exceeded the daily maximum" );
 			ApplicationController.SendMessage("endDiary");
