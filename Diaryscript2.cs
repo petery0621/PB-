@@ -58,6 +58,7 @@ public class DiaryScript2: MonoBehaviour {
 	string symptoms = "";	
 	String alert;
 	string[] answerYN = {"Yes", "No"} ;
+	string[] answerYND = {"Yes", "No", "Did not try since last entry"} ;
 	string[] clickToBegin = {"Click to begin"} ;
 	string[] cont = {"continue"} ;
 	QuestionEntry[] partAQuestionArr; 
@@ -165,22 +166,26 @@ public class DiaryScript2: MonoBehaviour {
 			if(questionArr[count].answerText==cont) input=GUILayout.TextField(input, 20);
 			if (GUILayout.Button (questionArr [count].answerText [j])) {
 				// save user's answer to answerArr
-				if (questionArr [count].answerText == answerYN) {
+				if (questionArr [count].answerText == answerYN
+					    ||questionArr[count].answerText == answerYND) {
 //					answerArr [count] = 1 - j;
 					//separate every qusetion with a comma
 					answers += (count==1)?"":",";
 					answers += (1 - j).ToString ();
+					//for alert
+					response1 += (1-j).ToString();
 				}else if(questionArr[count].answerText==cont){
 					answers+=(input!="")?("/"+input+","):"/*,*";
 				} else if (questionArr[count].answerText!=clickToBegin) {
 					//answerArr [count] = j + questionArr [count].answerOffset;
 					answers += (j + questionArr [count].answerOffset).ToString ();
-				} 
+					response1 += (j + questionArr [count].answerOffset).ToString ();
+					} 
 				
 				
 				//save response locally
 				PlayerPrefs.SetString ("responses", answers);
-				alert = getSymptom(answers); 
+				alert = getSymptom(response1); 
 				symptoms += encodeSymptom(alert);
 
 //					alert = getSymptomCode (count, answers);
@@ -190,11 +195,14 @@ public class DiaryScript2: MonoBehaviour {
 				// if user answers "no" to any symptom, skip the follow up questions
 				if (questionArr [count].answerText == answerYN && j == 1) {
 					count++;  
-					while (questionArr[count].answerText != answerYN&&questionArr[count].answerText.Length!=1) {
+					while (questionArr[count].answerText != answerYN
+						       &&questionArr[count].answerText != answerYND
+						       &&questionArr[count].answerText.Length!=1) {
 //						answerArr [count] = -1;
 						answers += "*";
+						response1 += "*";
 						PlayerPrefs.SetString ("responses", answers);
-						alert = getSymptom(answers); 
+						alert = getSymptom(response1); 
 						count++;
 						if (count >= questionArr.Length) {
 							answers+="/";
@@ -227,7 +235,7 @@ public class DiaryScript2: MonoBehaviour {
 			PlayerPrefs.SetString ("responses", answers);
 			winID=1;
             count=0;
-			Debug.Log("after msas"+answers);
+//			Debug.Log("after msas"+answers);
 		}
         if(GUI.Button(new Rect(20,600,70,60),"skip")) {
 			for(int i=count;i<questionArr.Length-2;i++){
@@ -272,7 +280,7 @@ public class DiaryScript2: MonoBehaviour {
 			answers+="/";
 			count=0;
 			winID=3;
-			Debug.Log("after appt:" + answers);
+//			Debug.Log("after appt:" + answers);
 		}   
 	}
 	void describePain(int windowID){
@@ -299,7 +307,7 @@ public class DiaryScript2: MonoBehaviour {
 				PlayerPrefs.SetString ("responses", answers);
 				count=0;
 				winID=4;
-				Debug.Log("after describePain:"+ answers);
+//				Debug.Log("after describePain:"+ answers);
 			}
 		}
 		//testing
@@ -349,16 +357,20 @@ public class DiaryScript2: MonoBehaviour {
 			else if(count<37){
 				if(count%3==1){
 					if(GUILayout.Button(questionArr[count].answerText[0])){
-						answers+=",1";
+						if(count==13) answers += "/1";
+						else {
+							answers+=",1";}
 						count++;
 					}else if(GUILayout.Button(questionArr[count].answerText[1])){
-						answers+=",0,*,*";
+						if(count==13) answers += "/0,*,*";
+						else{ 
+							answers+=",0,*,*";}
 						count+=3;//jump 
 					}
 					PlayerPrefs.SetString ("responses", answers);
 				}    
 				else if(count%3==2){
-					medTimes[count/3] = GUILayout.TextField(medTimes[count/3], 20);   
+					medTimes[count/3-1] = GUILayout.TextField(medTimes[count/3-1], 20);   
 				}
 				else if(count%3==0){
 					medHelp4[count/3-2] = GUILayout.HorizontalSlider(medHelp4[count/3-2], 0f,3f);
@@ -378,10 +390,10 @@ public class DiaryScript2: MonoBehaviour {
 					}
 				}    
 				else if(count==38){
-					medNames[3] = GUILayout.TextField(medNames[3], 20);   
+					medNames[3] = GUILayout.TextField(medNames[3], 255);   
 				}
 				else if(count==39){
-					medTimes[11] = GUILayout.TextField(medTimes[11], 20);   
+					medTimes[11] = GUILayout.TextField(medTimes[11], 255);   
 				}
 				else if(count==40){
 					medHelp4[11] = GUILayout.HorizontalSlider(medHelp4[11], 0f,3f);
@@ -395,19 +407,18 @@ public class DiaryScript2: MonoBehaviour {
 			if(((count<13&&count%4!=1)||(count%3!=1&&count>=13))&&count!=0||count>37){
 				if(GUI.Button(new Rect(12,600,200,60), "continue")){
 					if(count<13){
-						if(count%4==2) answers+=","+medNames[count/4];
-						else if(count%4==3) answers+=","+medTimes[count/4];
+						if(count%4==2) answers+=(medNames[count/4]!="")?","+medNames[count/4]:",*";
+						else if(count%4==3) answers+=(medTimes[count/4]!="")?","+medTimes[count/4]:",*";
 						else if(count%4==0) answers+=","+Convert.ToInt32(medHelp4[count/4-1]).ToString();
 					}else if(count<37){
-						if(count==13) answers+="/";
-						if(count%3==2) answers+=","+medTimes[count/3];
+						if(count%3==2) answers+=(medTimes[count/3]!="")?","+medTimes[count/3]:",*";
 						else if(count%3==0) answers+=","+Convert.ToInt32(medHelp4[count/3-1]).ToString();
 					}	
 					else if(count==38){
-						answers+=","+medNames[3];   
+						answers+=(medNames[3]!="")?","+medNames[3]:",*";   
 					}
 					else if(count==39){
-						answers+=","+medTimes[11];   
+						answers+=(medTimes[11]!="")?","+medTimes[11]:",*";   
 					}
 					else if(count==40){
 						answers+=","+Convert.ToInt32(medHelp4[11]).ToString();   
@@ -415,16 +426,19 @@ public class DiaryScript2: MonoBehaviour {
 					else if(count==41){
 						answers+=","+Convert.ToInt32(medHelp6[0]).ToString();
 					}else{
-						answers+=","+Convert.ToInt32(medHelp6[1]).ToString();
+						answers+=","+Convert.ToInt32(medHelp6[1]).ToString()+"/";
 					}
 					PlayerPrefs.SetString ("responses", answers);
 				  	count++;
 				}
 		   	}
 		 }
-		else{
+		//avoid this part being excuted twice(don't why twice yet)
+		else if(count<questionArr.Length+1){
+			count++;
+			winID = -1;
 			GUILayout.Label("You've you finished diary today!");
-			Debug.Log("after part3:"+answers);
+//			Debug.Log("after part3:"+answers);
 			endDiary();
 		}
 				   
@@ -480,6 +494,7 @@ public class DiaryScript2: MonoBehaviour {
 	}
 	
 	public void endDiary( ){
+		winID = -1;
 //		String time = System.DateTime.Now.ToShortTimeString();
 		string today = System.DateTime.Now.ToShortDateString ();
 		int diaryDailyTimes = PlayerPrefs.GetInt ("diaryDailyTimes" + today);//what if started yesterday, finished today?
@@ -491,7 +506,6 @@ public class DiaryScript2: MonoBehaviour {
 //		PlayerPrefs.SetString("diary"+today+time+"responses", 
 //		                      PlayerPrefs.GetString("responses"));
 		queueResponsesForUploading (answers); 
-		winID = -1;
 //		Debug.Log ("Answers stored (via PlayerPref): " + 
 //		           PlayerPrefs.GetString("responses"));
 //		Debug.Log ("Responses stored : " + answers);
@@ -825,7 +839,6 @@ public class DiaryScript2: MonoBehaviour {
 		string intro = "We want to find out how you have been feeling since your last diary.";
 		string[] answerHowLong = new string[]{"A very short time","A medium amount","Almost all the time"} ;
 		string[] answerTrouble = new string[]{"Not at all", "A little", "A medium amount", "Very much"} ;
-		string[] answerYND = new string[] {"Yes", "No", "Did not try since last entry"} ;
 
 		msas0809[0] = new QuestionEntry(intro,clickToBegin,0);
 		msas0809[1] = new QuestionEntry("Q1: " + "Did you feel more tired since your last entry than you usually do?", answerYN, 0, "Tired",3);
