@@ -167,21 +167,25 @@ public class DiaryScript2: MonoBehaviour {
 				// save user's answer to answerArr
 				if (questionArr [count].answerText == answerYN) {
 //					answerArr [count] = 1 - j;
+					//separate every qusetion with a comma
+					answers += (count==1)?"":",";
 					answers += (1 - j).ToString ();
 				}else if(questionArr[count].answerText==cont){
-					answers+=(input!="")?(","+input+","):",*,*";
+					answers+=(input!="")?("/"+input+","):"/*,*";
 				} else if (questionArr[count].answerText!=clickToBegin) {
 					//answerArr [count] = j + questionArr [count].answerOffset;
 					answers += (j + questionArr [count].answerOffset).ToString ();
-				}
-					//save response locally
-					PlayerPrefs.SetString ("responses", answers);
-					alert = getSymptom(answers); 
-					symptoms += encodeSymptom(alert);
+				} 
+				
+				
+				//save response locally
+				PlayerPrefs.SetString ("responses", answers);
+				alert = getSymptom(answers); 
+				symptoms += encodeSymptom(alert);
 
 //					alert = getSymptomCode (count, answers);
 //					symptoms += alert;
-					PlayerPrefs.SetString ("symptoms", symptoms);
+				PlayerPrefs.SetString ("symptoms", symptoms);
 				
 				// if user answers "no" to any symptom, skip the follow up questions
 				if (questionArr [count].answerText == answerYN && j == 1) {
@@ -223,12 +227,12 @@ public class DiaryScript2: MonoBehaviour {
 			PlayerPrefs.SetString ("responses", answers);
 			winID=1;
             count=0;
-//			Debug.Log("after partA"+answers);
+			Debug.Log("after msas"+answers);
 		}
         if(GUI.Button(new Rect(20,600,70,60),"skip")) {
-			for(int i=count;i<questionArr.Length;i++){
+			for(int i=count;i<questionArr.Length-2;i++){
 				answers+="*";}
-			answers+=",*/";
+			answers+="/*,*/";
 			PlayerPrefs.SetString ("responses", answers);
 			winID=1;
 			count=0;
@@ -265,10 +269,10 @@ public class DiaryScript2: MonoBehaviour {
 				answers+= (sldrValue==-1)?"*":sldrValue.ToString();
 				PlayerPrefs.SetString ("responses", answers);
 			}
-//			answers=+"/";
+			answers+="/";
 			count=0;
 			winID=3;
-//			Debug.Log("after appt:" + answers);
+			Debug.Log("after appt:" + answers);
 		}   
 	}
 	void describePain(int windowID){
@@ -291,18 +295,18 @@ public class DiaryScript2: MonoBehaviour {
 			GUILayout.Label("Do you have any other words that you would like to add that describe your your pain?");
 			painWord = GUILayout.TextField(painWord,255);
 			if(GUILayout.Button("Continue")){
-				answers+=","+painWord+"/";
+				answers+=(painWord!="")?"/"+painWord+"/":"/*/";
 				PlayerPrefs.SetString ("responses", answers);
 				count=0;
 				winID=4;
-//				Debug.Log("after appt2:"+ answers);
+				Debug.Log("after describePain:"+ answers);
 			}
 		}
 		//testing
 		if(GUI.Button(new Rect(20,700,120,60), "skip") ) {
 			for(int i=count;i<painWords.Length;i++){
 				answers+="*";}
-			answers+=",*/";
+			answers+="/*/";
 			PlayerPrefs.SetString ("responses", answers);
 			count= 0;
 			winID=4;}
@@ -364,11 +368,11 @@ public class DiaryScript2: MonoBehaviour {
 			else if (count<43){
 				if(count==37){
 					if(GUILayout.Button(questionArr[count].answerText[0])){
-						answers+=",1";
+						answers+="/1";
 						PlayerPrefs.SetString ("responses", answers);
 						count++;
 					}if(GUILayout.Button(questionArr[count].answerText[1])){
-						answers+=",0,*,*,*";
+						answers+="/0,*,*,*";
 						PlayerPrefs.SetString ("responses", answers);
 						count+=4;//jump 
 					}
@@ -395,6 +399,7 @@ public class DiaryScript2: MonoBehaviour {
 						else if(count%4==3) answers+=","+medTimes[count/4];
 						else if(count%4==0) answers+=","+Convert.ToInt32(medHelp4[count/4-1]).ToString();
 					}else if(count<37){
+						if(count==13) answers+="/";
 						if(count%3==2) answers+=","+medTimes[count/3];
 						else if(count%3==0) answers+=","+Convert.ToInt32(medHelp4[count/3-1]).ToString();
 					}	
@@ -419,7 +424,7 @@ public class DiaryScript2: MonoBehaviour {
 		 }
 		else{
 			GUILayout.Label("You've you finished diary today!");
-//			Debug.Log("after part3:"+answers);
+			Debug.Log("after part3:"+answers);
 			endDiary();
 		}
 				   
@@ -716,7 +721,7 @@ public class DiaryScript2: MonoBehaviour {
 	void toast(string message)
 	{
 		//only include in code for tests on Android Device
-		Toast.Instance ().ToastshowMessage (message, ToastLenth.LENGTH_SHORT);
+//		Toast.Instance ().ToastshowMessage (message, ToastLenth.LENGTH_SHORT);
 	}
 	
 	//********//Populate and Hard Coding Methods Start Here //********//
