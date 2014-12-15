@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 
 [System.Serializable]		
@@ -102,10 +103,8 @@ public class DiaryScript2: MonoBehaviour {
 	string response3_medications;
 	string response3_activity;
 	string response3_input;
-
-
 	
-	
+
 	// Initialization
 	void Start () {
 //		clearKeys (); 	
@@ -116,7 +115,6 @@ public class DiaryScript2: MonoBehaviour {
 		diaryWinTop = 60; 
 		age = 9;
 		winID = -1;
-		
 		surveyGUI = new Rect(diaryWinLeft, diaryWinTop, 
 		                     Screen.width-diaryWinLeft*2, Screen.height-diaryWinTop*2);
 		apptImage = Resources.Load("appt") as Texture2D;
@@ -126,6 +124,7 @@ public class DiaryScript2: MonoBehaviour {
 		painWords = populateAPPTSec3 ();//15 blocks
 		medNames=new string[4]{"","","",""};
 		for(int i=0;i<12;i++) medTimes[i]="";
+
 		//Audio and Animation
 		//		audioNum = questionArr.Length-1;
 		//		audioSwitch = false; 
@@ -542,12 +541,28 @@ public class DiaryScript2: MonoBehaviour {
 	String encodeSymptom(string sym){
 		if(sym==null||sym.Length==0){
 			return null;}
-		string[] arr=sym.ToLower().Split(new char[]{' '});
+		string[] arr=sym.ToLower().Split(new char[]{' '});        
 		int len = arr.Length;
+        string first = arr[0];
 		StringBuilder sb = new StringBuilder();
-		for(int i=0;i<len;i++){
-			sb.Append(getFirstLetter(arr[i]));
-		}
+        
+        if(first=="problem") sb.Append("pu");
+        else if (first=="difficulty") sb.Append("ds");
+        else if (first=="nausea") sb.Append("na");
+        else if (first=="dizziness") sb.Append("dz");
+        else if (first=="constipation") sb.Append("cs");
+        else if (first=="swelling") sb.Append("sal");
+        
+        else{
+            sb.Append(getFirstLetter(arr[0]));
+         }
+        sb.Append("/");
+        sb.Append(getFirstLetter(arr[len-1]));
+
+//		for(int i=0;i<len;i++){
+//            if(i=len-1) sb.Append("/");
+//			sb.Append(getFirstLetter(arr[i]));
+//		}
 		return sb.Append(",").ToString();
 	}
 	
@@ -558,6 +573,14 @@ public class DiaryScript2: MonoBehaviour {
 		char[] arr = str.ToCharArray();
 		return arr[0].ToString();
 	}
+    
+    string getFirst3Letter(string str){
+        if(str==null||str.Length<3){
+            Debug.Log("length less than 3");
+            return null;}
+        return str.Substring(0,3);
+    }
+    
 	//current count and responses, return symptom string triggered
 	String getSymptom(string str){
 		int len = str.Length;
@@ -666,7 +689,7 @@ public class DiaryScript2: MonoBehaviour {
 	
 	bool nthAlertFor3FollowUp(double[] arr, double sum, double a, double b, double c, int limit, String sym){
 		int n = PlayerPrefs.GetInt(sym);
-		if(sum>=7.5||(arr[0]>=a
+		if((arr[0]>=a
 		              &&arr[1]>=b
 		              &&arr[2]>=c)){
 			n++;
@@ -684,7 +707,7 @@ public class DiaryScript2: MonoBehaviour {
 	
 	bool nthAlertFor2FollowUp(double[] arr, double sum, double a, double b, int limit, String sym){
 		int n = PlayerPrefs.GetInt(sym);
-		if(sum>=7.5||(arr[0]>=a&&arr[1]>=b)){
+		if(arr[0]>=a&&arr[1]>=b){
 			n++;
 			if(n==limit){
 				PlayerPrefs.SetInt(sym, 0); 
@@ -699,7 +722,7 @@ public class DiaryScript2: MonoBehaviour {
 
 	bool nthAlertFor1FollowUp(double[] arr, double sum, double a, int limit, String sym){
 		int n = PlayerPrefs.GetInt(sym);
-		if(sum>=7.5||(arr[0]>=a)){
+		if(arr[0]>=a){
 			n++;
 			if(n==limit){
 				PlayerPrefs.SetInt(sym, 0); 
@@ -1018,21 +1041,26 @@ public class DiaryScript2: MonoBehaviour {
 
 	string[][] populateAPPTSec3(){
 		string[][] pains = new string[15][];
+		//evaluative
 		pains[0]  = new string[]{"annoying", "bad", "horrible", "misserable", "terrible", "uncomfortable"} ;
-		pains[1]  = new string[]{"numb","stiff","swollen","tight"} ;
-		pains[2]  = new string[]{"awful","deadly","dying","killing"} ;
-		pains[3]  = new string[]{"crying", "frightening","screaming","terrifying"} ;
-		pains[4]  = new string[]{"dizzy","sickeing", "suffocating"} ;
-		pains[5]  = new string[]{"aching", "hurting", "like an ache", "like a hurt", "sore"} ;
-		pains[6]  = new string[]{"beating", "hitting", "pouding", "punching", "throbbing"} ;
-		pains[7]  = new string[]{"biting", "cutting", "like a pin", "like a sharp knife", "pin like", "sharp", "stabbing"} ;
-		pains[8]  = new string[]{"blistering","burning","hot"} ;
-		pains[9]  = new string[]{"never goes away", "uncontrollable"} ;
-		pains[10]  = new string[]{"always", "comes and goes", "comes on all of a sudden", "constant","sontinuous","forever"} ;
-		pains[11]  = new string[]{"cramping", "crushing", "like a pinch", "pinching", "pressure"} ;
-		pains[12]  = new string[]{"Itching", "like a scratch", "like a sting", "scratching", "stinging"} ;
-		pains[13]  = new string[]{"off and on", "once in a while", "sneaks up", "sometimes", "steady"} ;
-		pains[14]  = new string[]{"shocking", "shooting", "splitting"} ;
+		//sensory
+		pains[1]  = new string[]{"aching", "hurting", "like an ache", "like a hurt", "sore"} ;
+		pains[2]  = new string[]{"beating", "hitting", "pouding", "punching", "throbbing"} ;
+		pains[3]  = new string[]{"biting", "cutting", "like a pin", "like a sharp knife", "pin like", "sharp", "stabbing"} ;
+		pains[4]  = new string[]{"blistering","burning","hot"} ;
+		pains[5]  = new string[]{"cramping", "crushing", "like a pinch", "pinching", "pressure"} ;
+		pains[6]  = new string[]{"Itching", "like a scratch", "like a sting", "scratching", "stinging"} ;
+		pains[7]  = new string[]{"shocking", "shooting", "splitting"} ;
+		pains[8]  = new string[]{"numb","stiff","swollen","tight"} ;
+		//affective
+		pains[9]  = new string[]{"awful","deadly","dying","killing"} ;
+		pains[10]  = new string[]{"crying", "frightening","screaming","terrifying"} ;
+		pains[11]  = new string[]{"dizzy","sickeing", "suffocating"} ;
+		//evalucative
+		pains[12]  = new string[]{"never goes away", "uncontrollable"} ;
+		//temporal
+		pains[13]  = new string[]{"always", "comes and goes", "comes on all of a sudden", "constant","sontinuous","forever"} ;
+		pains[14]  = new string[]{"off and on", "once in a while", "sneaks up", "sometimes", "steady"} ;
 		for(int i=0;i<pains.Length;i++){
 			painFlag[i]=new int[pains.Length];
 		}
@@ -1165,6 +1193,25 @@ public class DiaryScript2: MonoBehaviour {
 
 
         return questionArr;
+	}
+
+	Dictionary<string,string> getApptStringCode() {
+		Dictionary<string,string> rst = new Dictionary<string,string > ();
+		string[][] labels = populateAPPTSec3 ();
+
+		for(int i=0; i<labels.Length;i++){
+			string code ;
+			string [] arr = labels[i];
+			if(i==0)  code = "e"; //evaluative word
+			else if(i<9)  code = "s";//sensory word
+			else if(i<12) code = "a";//affective word
+			else if(i<13) code = "e";//evaluative word
+			else code = "t";//temporal word
+
+			for(int j=0;j<arr.Length;j++)
+				rst.Add(arr[j],code);
+		}
+		return rst; 
 	}
 	
 	AudioClip[] loadAudio(int length, String sex){//sex: female or male 
