@@ -4,8 +4,6 @@ using System.Collections;
 
 
 public class questionScript : MonoBehaviour {
-	
-	Text thisText; // questionText object 
 
 	// GameObject, drag and drop 
 	public GameObject yesNoButtons; 
@@ -13,11 +11,11 @@ public class questionScript : MonoBehaviour {
 	public GameObject howSevrButtons; 
 	public GameObject howBotherButtons;
 	public GameObject contButton; 
+	public GameObject sliderObj;
 	public GameObject[] answerButtons;
 
 	public GameObject canvasDiary; 
 	public GameObject canvasAppt; 
-	public GameObject apptCont;
 	public GameObject transparentBg;
 	
 	public GameObject b1; 
@@ -26,37 +24,49 @@ public class questionScript : MonoBehaviour {
 	public GameObject b4; 
 	public GameObject b5; 
 	GameObject pandaAvatar;
+
 	
+	Text thisText; // questionText object 
+	Text painLvText;
+	Slider slider;
 	GameObject prevBtn;
 
-	string[] questionSymArray; //PART A symptoms
-	string[] questionFollowArray; // PART B followups
-	string[] apptQuestionArray;
-	string[] pmiq;
-
 	int count;
+	int winId; 
 	ArrayList al; 
+	string answer; 
 
 	// part A 
 	int numPartAIntro; 
 	int numPartA1_sym ; 
 	int numPartA1;
 	int numPartA2_sym;
+	int numPartA2;
 	int numPartA; 
 	int numPartA_sym;
-
-	int numberPart_B1; 
+	// part B
+	int numPartB; 
 	int numberPart_B2; 
 	int numberPart_B3; 
 	int numberPart_B; 
 	int numberPart_AB; 
 	int numberLimit; 
+	bool painLvOn;
+
+	
+	string[] questionSymArray; //PART A symptoms
+	string[] questionFollowArray; // PART B followups
+	string[] apptQuestionArray;
+	string[] pmiq;
 	
 	// Use this for initialization
 	void Start () {
 		
 		thisText = GameObject.Find (this.name).GetComponent<Text> ();// renamed the Text object so that there will be no two same names 
 		pandaAvatar = GameObject.Find ("Panda Placeholder"); 
+		slider = sliderObj.GetComponentInChildren<Slider> ();
+		al = new ArrayList ();
+
 
 		// Initialize parameters for Part A
 		numPartAIntro = 1; 
@@ -64,11 +74,12 @@ public class questionScript : MonoBehaviour {
 		numPartA2_sym = 8; 
 		numPartA_sym = numPartA1_sym + numPartA2_sym; 
 		numPartA1 = numPartAIntro + numPartA1_sym * 4; //93
+		numPartA2 = numPartAIntro + numPartA2_sym * 3; 
 		numPartA = numPartA1 + numPartAIntro + numPartA2_sym * 3; //108
 
 		
 		// For Part B 
-		//		numberPart_B1 = 1; 
+		numPartB = 9; // length of apptQuestionArray 
 		//		numberPart_B2 = 4; 
 		//		numberPart_B3 = 2;
 		//		numberPart_B = numberPart_B1 + numberPart_B2 + numberPart_B3; 
@@ -81,12 +92,9 @@ public class questionScript : MonoBehaviour {
 		populateQuestionFollowArray (); 
 		populateApptQuestionArray ();
 
-		al = new ArrayList ();
-
-//===================debugging=====
-		partA ();
-//		partA1 ();
 		startDiary ();
+//===================debugging=====
+//		startDiary ();
 //		startAppt ();
 
 
@@ -95,86 +103,50 @@ public class questionScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		if(painLvOn)
+			painLvText.text = slider.value.ToString();
 	}
 	//=============================================================
 	
 	public void onClick (){// proceed to change the question text 
 
-		partAtext ();  
-		partAbtn (); // NEED To be fixed
-		count++;
-		//		Debug.Log ("count = :" + count); 
-		//		// change the text of the button text 
-		//
-		//		// Part A 
-		//		if (count < numberPart_A1){
-		//			thisText.text = (count%4 == 0)?	
-		//				questionSymArray[count/4]:
-		//				questionFollowArray[count%4-1];
-		//
-		//		}
-		//		else if (count < numberPart_A){
-		//
-		//			if (count == numberPart_A1)
-		//				yesNoButtons.SendMessage ("endSecA1");//only concerns "yesNoButtons"
-		//
-		//			int count2 = count - numberPart_A1; //
-		//
-		//			thisText.text = (count2%3 == 0)? 
-		//				questionSymArray [count2/3 + numberPart_A1_sym]:
-		//				questionFollowArray [count2%3 ];
-		//
-		//		}
-		//		// Part B
-		//		else if (count < numberPart_AB) {
-		//			int count2 = count - numberPart_A;
-		//
-		//			if(count2 == 0){
-		////				yesNoButtons.SendMessage ("endSecA"); 
-		//				yesNoButtons.SetActive (false);
-		//				contButton.SetActive (true); //go to part B 
-		//				Debug.Log("senction A ends when count2 = 0");
-		//			}
-		//			if(count2 == numberPart_B1){
-		//				//show appt figure with transparent background
-		//				startAppt ();
-		//
-		//
-		//				Debug.Log("appt starts as count2 = 1");
-		//			}
-		//			thisText.text = apptQuestionArray [count2];
-		//		}
-		//
-		//
-		//		count ++; 
-		// if count exceeds the limit, deactivate this object or "You have finished"
+		switch (winId) {
+		
+		case 0: 
+//			partAtext (numPartA1);
+			partAtext (numPartA1);
+			partAbtn ();
+			break;
+		case 1:
+//			partAtext (numPartA_kid);
+//			partAbtn (); //Possible change due to question change
+			break;
+		case 2: // 1018 2nd half (same structure w/ 1st half)
+			partAtext (numPartA2);
+			partAbtn ();
+			break;
+		case 3: 
+			partBtext ();
+			partBbtn ();
+			break;
+		default:
+			Debug.Log ("run default in coClick switch"); 
+			break;
+		}
+
+
+
+
+
+
+
+		count ++;
 		if (!(count < numberLimit)) 
 			thisText.text = "You have finished the diary! Hooray!";
 	}
 	
 	public void onClickNo() {
-//		if(count < numberPart_A){
-//			// skip the follow up questions 
-//			
-//			// skip 4
-//			if(count < numberPart_A1){
-//				if (count %4 != 0) 
-//					count += (4 - count%4) ;
-//				else count += 4; 
-//			}
-//			// skip 3
-//			else { 
-//				int count2 = count - numberPart_A1; 
-//				if (count2 %3 != 0)
-//					count += (3 - count%3) ; 
-//				else count +=3;
-//			}
-//		}
-//		
-//		if(count == numberPart_A)
-//			yesNoButtons.SetActive(false);
-//		//show the question text
-//		onClick (); 
+//	
 	}
 	//======================================================================
 	
@@ -184,8 +156,9 @@ public class questionScript : MonoBehaviour {
 
 		// initialize parameters: date, time, user info
 		count = 0; 
-		thisText.text = al[count].ToString ();
-		count ++;
+		winId = 0;
+		painLvOn = false;
+//		winId = (uesrAge > 9) ? 0 : 1;
 
 		contButton.SetActive (true);
 		prevBtn = contButton;
@@ -195,15 +168,28 @@ public class questionScript : MonoBehaviour {
 		howSevrButtons.SetActive (false);
 		howOftenButtons.SetActive (false);
 		canvasAppt.SetActive (false);
-//		answerButtons = new GameObject[]{
-//			yesNoButtons, howOftenButtons, howSevrButtons, howSevrButtons};
 
-	
+		// start to LOAD and show question text 
+		// 10-18 or 08-09
+		switch (winId){
+		case 0: 
+			partA ();
+			break;
+		case 1:
+			//partA_kid (); 
+			break;
+		default:
+			partA (); 
+			Debug.Log ("This is the default in startDiary");
+			break;
+		}
+		thisText.text = al[count].ToString ();
+		count ++;
+
 	}
 
 	
-	void startPartA_kid(){
-	}
+
 	void startAppt (){
 		
 		//		pandaAvatar.SetActive (false);
@@ -225,7 +211,8 @@ public class questionScript : MonoBehaviour {
 		}
 		
 	}
-
+	//---------------------------------------------------------------------------
+	//partA	
 	//---------------------------------------------------------------------------
 	void partA (){//first half of part A 
 		/* Part A has three blocks ;
@@ -248,19 +235,18 @@ public class questionScript : MonoBehaviour {
 			}
 		}	
 		// debugging 
-		for (int i=0;i<al.Count;i++) {
-//			string t = al[i].ToString();
-			Debug.Log (al[i].ToString());
-		}
+//		for (int i=0;i<al.Count;i++) {
+//			Debug.Log (i.ToString() + al[i].ToString());
+//		}
 	}
 
 	void partA1() {
 		// Build question structure for Part A 10-18 section 2
 
-		string partIntro = "We have 8 more questions."; 
+		string intro = "We have 8 more questions."; 
 
 		al.Clear(); 
-		al.Add (partIntro); 
+		al.Add (intro); 
 		for (int i=numPartA1_sym; i<numPartA_sym; i++) {
 			al.Add(questionSymArray[i]);
 			for(int j=1; j<questionFollowArray.Length; j++) {
@@ -281,11 +267,14 @@ public class questionScript : MonoBehaviour {
 
 		// Present answer choices according to the current question 
 		string currText = al [count].ToString();
-		Debug.Log (currText);
+		Debug.Log ("current text: " +currText);
 
 		// introduction -> continue
 		if (currText.Contains ("We have ")){
-		    contButton.SetActive (true);
+			prevBtn.SetActive (false);
+			if(!contButton.activeSelf)
+		    	contButton.SetActive (true);
+			prevBtn = contButton ;
 		}
 		// "Since the last diary entry.." -> yes/no
 		else if (currText.Contains ("diary")){
@@ -315,22 +304,103 @@ public class questionScript : MonoBehaviour {
 		else {
 			prevBtn.SetActive (false); 
 			yesNoButtons.SetActive (true); 
-			prevBtn.SetActive (false); 
+			prevBtn = yesNoButtons ;
 		}
 
 
 
 	}
 	// change question text
-	void partAtext(){
+	void partAtext(int length){
 //		string[] temp = (string[]) al.ToArray( typeof( string ) );
-		thisText.text = al [count].ToString();	;// NOTE: present then coutnt++
+		if(count <length ){
+			thisText.text = al [count].ToString();	// NOTE: present then coutnt++
+		}
+		else {
+			if(winId == 0){
+				winId = 2;//
+				partA1 ();
+				count = 0;
+				thisText.text = al[count].ToString();
+			}
+			else if(winId == 2){
+				winId = 3; 
+				partB (); 
+				count = 0; 
+				thisText.text = al[count].ToString();
+			}
+		}
 
 	}
 	//---------------------------------------------------------------------------
+	//partB
+	//---------------------------------------------------------------------------
+	void partB (){
+		// Loading text for Part B
+		
+		al.Clear (); 
+		for (int i=0; i<apptQuestionArray.Length; i++) {
+			al.Add(apptQuestionArray[i]);}	
+		// debugging 
+		//for (int i=0;i<al.Count;i++) {
+		//Debug.Log (i.ToString() + al[i].ToString());
+		//}
+	}
+
+	void partBbtn (){
+
+		// Present answer choices according to the current question 
+		string currText = al [count].ToString();
+		Debug.Log ("current text: " +currText);
+
+
+		// slider bar
+		if (currText.Contains ("much pain") && currText.Contains ("do you"))
+				|| currText.Contains ("was your")){
+			if (!sliderObj.activeSelf)
+				sliderObj.SetActive (true); 
+		}
+		else {
+			if (sliderObj.activeSelf) 
+				sliderObj.SetActive (false); 
+		}
+
+		// toggle
+		if (currText.Contains("as many of")){
+
+		}
+
+
+		// continue
+		prevBtn.SetActive (false);
+		if(!contButton.activeSelf)
+			contButton.SetActive (true);
+		prevBtn = contButton ;
 
 
 
+
+	}
+
+	void partBtext (){
+		if(count == 1){ //appt starts
+			canvasAppt.SetActive (true);
+		}
+		else {
+			if(	canvasAppt.activeSelf)
+				canvasAppt.SetActive (false);
+		}
+		thisText.text = al [count].ToString ();
+
+			
+	}
+
+
+
+
+
+
+	//---------------------------------------------------------------------------
 
 	//-------------------------------------------------------------------
 	void populateQuestionFollowArray (){
@@ -389,6 +459,15 @@ public class questionScript : MonoBehaviour {
 		//		Debug.Log ("Syptoms: ");
 		return; 
 	}
+
+	void populateQuestionKid(){
+		string intro = "We want to find out how you have been feeling since your last diary entry." +
+			"Tap on the screen to select your answers";
+		string a = "a"; 
+		string b = "b";
+		
+		
+	}
 	
 	void populateApptQuestionArray (){
 		string intro = "Now I need you to describe your pain.";
@@ -400,10 +479,35 @@ public class questionScript : MonoBehaviour {
 		string wgra = "How much pain did you have, ON AVERAGE, since your last diary entry?"; 
 		string wgrw = "What was your WORST pain since your last diary entry?"; 
 		string wgrl = "What was your LEAST pain since your last diary entry?";	
+
+		string note = "\n"+" 0: Not Hurting, 3: Huring A little, 5: Hurtring a Median amount, " +
+			"7: Hurting a log, 10: Hurting a whole lot";
+
+		string t = sec3Intro + "\n";
+		string p0 = t +"annoying, bad, horrible, miserable, terrible, uncomfortable";
+		//senseory
+		string p1 = t +"aching,hurting,like an ache,like a hurt,sore"  ;
+		string p2 = t +"beating, hitting , pouding, punching, throbbing";  
+		string p3  = t +"biting,cutting,like a pin,like a sharp knife,pin like,sharp,stabbing"  ;
+		string p4  = t +"blistering,burning,hot";
+		string p5  = t +"cramping,crushing,like a pinch,pinching,pressure"  ;
+		string p6  = t +"Itching,like a scratch,like a sting,scratching,stinging";
+		string p7  = t +"shocking,shooting,splitting"  ;
+		string p8  = t +"numb,stiff,swollen,tight"  ;
+		//affective
+		string p9  = t +"awful,deadly,dying,killing"  ;
+		string p10  = t +"crying,frightening,screaming,terrifying"  ;
+		string p11  = t +"dizzy,sickeing,suffocating"  ;
+		//evalucative
+		string p12  = t +"never goes away,uncontrollable"  ;
+		//temporal
+		string p13  = t +"always,comes and goes,comes on all of a sudden,constant,sontinuous,forever  ";
+		string p14  = t +"off and on,once in a while,sneaks up,sometimes,steady"  ;
 		
 		apptQuestionArray = new string[]{intro, sec1Intro, 
-			sec2Intro, wgr, wgra, wgrw, wgrl,
-			sec3Intro, other};
+			sec2Intro, wgr+note, wgra+note, wgrw+note, wgrl+note,
+			sec3Intro, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13 ,p14,
+			other};
 		
 	}
 	
