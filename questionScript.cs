@@ -45,9 +45,11 @@ public class questionScript : MonoBehaviour {
 	int count;
 	int winId; 
 	ArrayList al; 
-	string answer; 
 	bool clickNo;
-	
+	string answers; 
+	string response1; 
+	string response1_input; 
+
 	// part A 
 	int numPartAIntro; 
 	int numPartA1_sym ; 
@@ -87,8 +89,8 @@ public class questionScript : MonoBehaviour {
 		
 		// Initialize parameters for Part A
 		numPartAIntro = 1; 
-		numPartA1_sym = 23; 
-		numPartA2_sym = 8; 
+		numPartA1_sym = 3; 
+		numPartA2_sym = 2; 
 		numPartA_sym = numPartA1_sym + numPartA2_sym; 
 		numPartA1 = numPartAIntro + numPartA1_sym * 4; //93
 		numPartA2 = numPartAIntro + numPartA2_sym * 3; 
@@ -133,35 +135,40 @@ public class questionScript : MonoBehaviour {
 	
 	public void onClick (int value){// proceed to change the question text 
 
-			switch (winId) {
-				
-			case 0: 
-				partAtext (numPartA1);
-				partAbtn ();
-				break;
-			case 1:
-				//			partAtext (numPartA_kid);
-				//			partAbtn (); //Possible change due to question change
-				break;
-			case 2: // 1018 2nd half (same structure w/ 1st half)
-				partAtext (numPartA2);
-				partAbtn ();
-				break;
-			case 3: 
-				partBtext ();
-				partBbtn ();
-				break;
-			case 4:
-				partCtext (); 
-				partCbtn (); 
-				break;
-			default:
-				Debug.Log ( "winId = sth else; run default in onClick switch"); 
-				break;
-			}
+		// display the question
+		switch (winId) {
 			
-			count ++;
+		case 0: 
+			partAtext (numPartA1);
+			partAbtn (value);
+			break;
+		case 1:
+			//			partAtext (numPartA_kid);
+			//			partAbtn (); //Possible change due to question change
+			break;
+		case 2: // 1018 2nd half (same structure w/ 1st half)
+			partAtext (numPartA2);
+			partAbtn (value);
+			break;
+		case 3: 
+			partBtext ();
+			partBbtn ();
+			break;
+		case 4:
+			partCtext (); 
+			partCbtn (); 
+			break;
+		default:
+			Debug.Log ( "winId = sth else; run default in onClick switch"); 
+			break;
+		}
+			
+		// store the response
+		// value should range from 0-5
+//		response1 += value.ToString();
 
+			
+		count ++;
 		
 		if (!(count < numberLimit)) 
 			thisText.text = "You have finished the diary! Hooray!";
@@ -281,10 +288,14 @@ public class questionScript : MonoBehaviour {
 	}
 	
 	// change answer button
-	void partAbtn(){//count -> buttons
+	void partAbtn(int value){//count -> buttons
 		/* Since the general pattern for button transition 
-		 * stays the same for Part A, this part is for 
-		 * the transition 
+		 * stays the same for Part A, this part is for button  
+		 * pattern transition 
+		 * And response storing 
+		 * 
+		 * value : input from the clicking the button 
+		 * count : the current pointer in questionText (al)
 		 */ 
 		
 		// Present answer choices according to the current question 
@@ -297,12 +308,15 @@ public class questionScript : MonoBehaviour {
 			if(!contButton.activeSelf)
 				contButton.SetActive (true);
 			prevBtn = contButton ;
+		
 		}
 		// "Since the last diary entry.." -> yes/no
 		else if (currText.Contains ("diary")){
 			prevBtn.SetActive (false);
 			yesNoButtons.SetActive (true); 
 			prevBtn = yesNoButtons; 
+
+
 		}
 		// "how often.." 
 		else if (currText.Contains ("often")){
@@ -328,49 +342,61 @@ public class questionScript : MonoBehaviour {
 			contButton.SetActive (true); 
 			prevBtn = contButton ;
 		}				
+
+		// for storing the answers, separate responses by each question
+
+
+		if (clickNo) {
+			response1 += (count < numPartA1) ? "0***": "0**";
+		} else if (count != numPartA1){
+			response1 += value.ToString (); 
+		}
+		if (currText.Contains("diary")){
+			response1 += ","; 
+		}
+		Debug.Log (response1); 
 		
 	}
 	// change question text
 	void partAtext(int length){
-		// display part A text 
-		// transition to part B
-
+		/* display part A text : part A1, part A2
+		* transition to part B
+		*/
+		Debug.Log ("before text count is : " + count); 
 		if(count <length ){
 			if(!clickNo){
 				thisText.text = al [count].ToString();	// NOTE: present then coutnt++
 			}
 			else{
-				while ((count<length) && !al[count].ToString().Contains("diary")){
+				while (!al[count].ToString().Contains("diary")){
 					// In the "if(count<XXX)", after "count++" 
 					// you need to decide again
-				
+					if (!(count<length)) {
+						// THE SAME CODE
+						if(winId == 0){
+							winId = 2;//
+							partA1 ();
+							count = 0;
+							thisText.text = al[count].ToString();
+						}
+						else if(winId == 2){
+							winId = 3; 
+							partB (); 
+							count = 0; 
+							thisText.text = al[count].ToString();
+							count_toggle = 0; 
+							painLvOn = false;
+							prevTgl = toggle[0];
+						}
+					}
 					count++;
 				}
-
-				if (!(count<length)) {
-					// THE SAME CODE
-					if(winId == 0){
-						winId = 2;//
-						partA1 ();
-						count = 0;
-						thisText.text = al[count].ToString();
-					}
-					else if(winId == 2){
-						winId = 3; 
-						partB (); 
-						count = 0; 
-						thisText.text = al[count].ToString();
-						count_toggle = 0; 
-						painLvOn = false;
-						prevTgl = toggle[0];
-					}
-				}
-
 				thisText.text = al [count].ToString();
 			}
+		
 		}
 		else {
-			// THE SAME CODE
+			// THE SAME CODE 
 			if(winId == 0){
 				winId = 2;//
 				partA1 ();
