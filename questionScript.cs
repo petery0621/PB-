@@ -136,7 +136,7 @@ public class questionScript : MonoBehaviour {
 			switch (winId) {
 				
 			case 0: 
-				partAtext (13);
+				partAtext (numPartA1);
 				partAbtn ();
 				break;
 			case 1:
@@ -144,7 +144,7 @@ public class questionScript : MonoBehaviour {
 				//			partAbtn (); //Possible change due to question change
 				break;
 			case 2: // 1018 2nd half (same structure w/ 1st half)
-				partAtext (4);
+				partAtext (numPartA2);
 				partAbtn ();
 				break;
 			case 3: 
@@ -340,12 +340,37 @@ public class questionScript : MonoBehaviour {
 				thisText.text = al [count].ToString();	// NOTE: present then coutnt++
 			}
 			else{
-				while (!al[count].ToString().Contains("diary"))
+				while ((count<length) && !al[count].ToString().Contains("diary")){
+					// In the "if(count<XXX)", after "count++" 
+					// you need to decide again
+				
 					count++;
+				}
+
+				if (!(count<length)) {
+					// THE SAME CODE
+					if(winId == 0){
+						winId = 2;//
+						partA1 ();
+						count = 0;
+						thisText.text = al[count].ToString();
+					}
+					else if(winId == 2){
+						winId = 3; 
+						partB (); 
+						count = 0; 
+						thisText.text = al[count].ToString();
+						count_toggle = 0; 
+						painLvOn = false;
+						prevTgl = toggle[0];
+					}
+				}
+
 				thisText.text = al [count].ToString();
 			}
 		}
 		else {
+			// THE SAME CODE
 			if(winId == 0){
 				winId = 2;//
 				partA1 ();
